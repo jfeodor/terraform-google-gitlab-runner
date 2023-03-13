@@ -117,7 +117,7 @@ sed -i "s/concurrent = .*/concurrent = ${var.ci_concurrency}/" /etc/gitlab-runne
 
 echo "Registering GitLab CI runner with GitLab instance."
 
-for ci_token in $${${var.ci_tokens}//,/ }; do
+for ci_token in ${var.ci_tokens}; do
   sudo gitlab-runner register -n \
       --name "${local.ci_runner_gitlab_name_final}" \
       --url ${var.gitlab_url} \
