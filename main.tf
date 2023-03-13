@@ -116,33 +116,36 @@ echo "Setting GitLab concurrency"
 sed -i "s/concurrent = .*/concurrent = ${var.ci_concurrency}/" /etc/gitlab-runner/config.toml
 
 echo "Registering GitLab CI runner with GitLab instance."
-sudo gitlab-runner register -n \
-    --name "${local.ci_runner_gitlab_name_final}" \
-    --url ${var.gitlab_url} \
-    --registration-token ${var.ci_token} \
-    --executor "docker+machine" \
-    --docker-image "alpine:latest" \
-    --tag-list "${var.ci_runner_gitlab_tags}" \
-    --run-untagged="${var.ci_runner_gitlab_untagged}" \
-    --docker-privileged=${var.docker_privileged} \
-    --machine-idle-time ${var.ci_worker_idle_time} \
-    --machine-machine-driver google \
-    --machine-machine-name "${var.gcp_resource_prefix}-worker-%s" \
-    --machine-machine-options "google-project=${var.gcp_project}" \
-    --machine-machine-options "google-machine-type=${var.ci_worker_instance_type}" \
-    --machine-machine-options "google-machine-image=ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20220419" \
-    --machine-machine-options "google-zone=${var.gcp_zone}" \
-    --machine-machine-options "google-service-account=${google_service_account.ci_worker.email}" \
-    --machine-machine-options "google-scopes=https://www.googleapis.com/auth/cloud-platform" \
-    --machine-machine-options "google-disk-type=pd-ssd" \
-    --machine-machine-options "google-disk-size=${var.ci_worker_disk_size}" \
-    --machine-machine-options "google-tags=${var.ci_worker_instance_tags}" \
-    --machine-machine-options "google-use-internal-ip" \
-    %{if var.pre_clone_script != ""}--pre-clone-script ${replace(format("%q", var.pre_clone_script), "$", "\\$")}%{endif} \
-    %{if var.post_clone_script != ""}--post-clone-script ${replace(format("%q", var.post_clone_script), "$", "\\$")}%{endif} \
-    %{if var.pre_build_script != ""}--pre-build-script ${replace(format("%q", var.pre_build_script), "$", "\\$")}%{endif} \
-    %{if var.post_build_script != ""}--post-build-script ${replace(format("%q", var.post_build_script), "$", "\\$")}%{endif} \
-    && true
+
+for ci_token in $${${var.ci_tokens}//,/ }; do
+  sudo gitlab-runner register -n \
+      --name "${local.ci_runner_gitlab_name_final}" \
+      --url ${var.gitlab_url} \
+      --registration-token ${var.ci_token} \
+      --executor "docker+machine" \
+      --docker-image "alpine:latest" \
+      --tag-list "${var.ci_runner_gitlab_tags}" \
+      --run-untagged="${var.ci_runner_gitlab_untagged}" \
+      --docker-privileged=${var.docker_privileged} \
+      --machine-idle-time ${var.ci_worker_idle_time} \
+      --machine-machine-driver google \
+      --machine-machine-name "${var.gcp_resource_prefix}-worker-%s" \
+      --machine-machine-options "google-project=${var.gcp_project}" \
+      --machine-machine-options "google-machine-type=${var.ci_worker_instance_type}" \
+      --machine-machine-options "google-machine-image=ubuntu-os-cloud/global/images/ubuntu-2004-focal-v20220419" \
+      --machine-machine-options "google-zone=${var.gcp_zone}" \
+      --machine-machine-options "google-service-account=${google_service_account.ci_worker.email}" \
+      --machine-machine-options "google-scopes=https://www.googleapis.com/auth/cloud-platform" \
+      --machine-machine-options "google-disk-type=pd-ssd" \
+      --machine-machine-options "google-disk-size=${var.ci_worker_disk_size}" \
+      --machine-machine-options "google-tags=${var.ci_worker_instance_tags}" \
+      --machine-machine-options "google-use-internal-ip" \
+      %{if var.pre_clone_script != ""}--pre-clone-script ${replace(format("%q", var.pre_clone_script), "$", "\\$")}%{endif} \
+      %{if var.post_clone_script != ""}--post-clone-script ${replace(format("%q", var.post_clone_script), "$", "\\$")}%{endif} \
+      %{if var.pre_build_script != ""}--pre-build-script ${replace(format("%q", var.pre_build_script), "$", "\\$")}%{endif} \
+      %{if var.post_build_script != ""}--post-build-script ${replace(format("%q", var.post_build_script), "$", "\\$")}%{endif} \
+      && true
+done
 
 echo "GitLab CI Runner installation complete"
 SCRIPT
