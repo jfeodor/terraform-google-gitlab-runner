@@ -121,7 +121,7 @@ for ci_token in ${var.ci_tokens}; do
   sudo gitlab-runner register -n \
       --name "${local.ci_runner_gitlab_name_final}" \
       --url ${var.gitlab_url} \
-      --registration-token ${var.ci_token} \
+      --registration-token $${ci_token} \
       --executor "docker+machine" \
       --docker-image "alpine:latest" \
       --tag-list "${var.ci_runner_gitlab_tags}" \
