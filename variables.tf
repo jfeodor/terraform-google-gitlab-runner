@@ -15,9 +15,9 @@
  */
 
 # Global options
-variable "ci_token" {
+variable "ci_tokens" {
   type        = string
-  description = "The runner registration token obtained from GitLab."
+  description = "The runner registration tokens obtained from GitLab, space separated list."
 }
 variable "gcp_project" {
   type        = string
